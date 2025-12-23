@@ -25,7 +25,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Create Clients with Projects and Invoices
+        // 2. Seed Default Settings
+        $defaultSettings = [
+            'site_name' => 'WujudKarya',
+            'site_description' => 'We build premium web applications, specialized systems, and stunning digital experiences that drive growth.',
+            'contact_email' => 'hello@wujudkarya.com',
+            'contact_phone' => '+62 812-3456-7890',
+            'social_instagram' => 'https://instagram.com/wujudkarya',
+        ];
+
+        foreach ($defaultSettings as $key => $value) {
+            \App\Models\Setting::firstOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
+        }
+
+        // 3. Create Clients with Projects and Invoices
         \App\Models\Client::factory(10)->create()->each(function ($client) {
             
             // Create 1-3 Projects for this client
@@ -49,7 +65,7 @@ class DatabaseSeeder extends Seeder
             });
         });
 
-        // 3. Create Leads (Potential Clients)
+        // 4. Create Leads (Potential Clients)
         \App\Models\Lead::factory(20)->create();
     }
 }

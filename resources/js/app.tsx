@@ -5,11 +5,15 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { Toaster } from '@/components/ui/sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => {
+        const siteName = (window as any).inertiaProps?.settings?.site_name || import.meta.env.VITE_APP_NAME || 'WujudKarya';
+        return title ? `${title} - ${siteName}` : siteName;
+    },
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,
@@ -21,11 +25,12 @@ createInertiaApp({
         root.render(
             <StrictMode>
                 <App {...props} />
+                <Toaster />
             </StrictMode>,
         );
     },
     progress: {
-        color: '#4B5563',
+        color: '#FDC400',
     },
 });
 

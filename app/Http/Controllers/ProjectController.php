@@ -26,7 +26,11 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return inertia('projects/create');
+        $clients = \App\Models\Client::select('id', 'name', 'company')->orderBy('name')->get();
+
+        return inertia('projects/create', [
+            'clients' => $clients
+        ]);
     }
 
     /**
@@ -34,7 +38,35 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if ($request->has('tech_stack_input')) {
+            $stack = array_map('trim', explode(',', $request->input('tech_stack_input')));
+            $stack = array_filter($stack);
+            $request->merge(['tech_stack' => array_values($stack)]);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'client_id' => 'required|exists:clients,id',
+            'type' => 'required|in:web,mobile,system,ui/ux',
+            'description' => 'nullable|string',
+            'tech_stack' => 'nullable|array',
+            'demo_url' => 'nullable|url',
+            'published_at' => 'nullable|date',
+            'is_featured' => 'boolean',
+            'thumbnail' => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('projects', 'public');
+            $validated['thumbnail'] = '/storage/' . $path;
+        }
+
+        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . rand(1000, 9999);
+        $validated['tech_stack'] = $validated['tech_stack'] ?? [];
+
+        Project::create($validated);
+
+        return redirect()->route('projects.index');
     }
 
     /**

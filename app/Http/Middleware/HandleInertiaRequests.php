@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -38,6 +40,11 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        // Cache settings for 1 hour to reduce DB queries
+        $settings = Cache::remember('site_settings', 3600, function () {
+            return Setting::pluck('value', 'key')->all();
+        });
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -46,6 +53,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'settings' => [
+                'site_name' => $settings['site_name'] ?? 'WujudKarya',
+                'site_description' => $settings['site_description'] ?? '',
+                'contact_email' => $settings['contact_email'] ?? '',
+                'contact_phone' => $settings['contact_phone'] ?? '',
+                'social_instagram' => $settings['social_instagram'] ?? '',
+            ],
         ];
     }
 }
