@@ -5,7 +5,8 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,14 @@ export default function Password() {
                         }}
                         className="space-y-6"
                     >
-                        {({ errors, processing, recentlySuccessful }) => (
+                        {({ errors, processing, recentlySuccessful }) => {
+                            useEffect(() => {
+                                if (recentlySuccessful) {
+                                    toast.success('Password has been updated.');
+                                }
+                            }, [recentlySuccessful]);
+
+                            return (
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="current_password">
@@ -137,7 +145,8 @@ export default function Password() {
                                     </Transition>
                                 </div>
                             </>
-                        )}
+                            );
+                        }}
                     </Form>
                 </div>
             </SettingsLayout>
