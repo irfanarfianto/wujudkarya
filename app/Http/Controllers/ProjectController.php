@@ -11,14 +11,60 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with('client')
-            ->latest()
-            ->paginate(10);
+        $query = Project::with('client');
+
+        if ($request->has('type') && $request->type && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->has('is_featured') && $request->is_featured !== null && $request->is_featured !== 'all') {
+            $isFeatured = filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_featured', $isFeatured);
+        }
+
+        if ($request->has('status') && $request->status && $request->status !== 'all') {
+            if ($request->status === 'published') {
+                $query->whereNotNull('published_at');
+            } elseif ($request->status === 'draft') {
+                $query->whereNull('published_at');
+            }
+        }
+
+        if ($request->has('tech_stack') && $request->tech_stack && $request->tech_stack !== 'all') {
+            $query->whereJsonContains('tech_stack', $request->tech_stack);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('client', function ($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%")
+                         ->orWhere('company', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $projects = $query->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        // Get all unique tech stacks for filter dropdown
+        $allTechStacks = Project::pluck('tech_stack')
+            ->flatten()
+            ->filter()
+            ->unique()
+            ->values()
+            ->sort()
+            ->values();
 
         return inertia('projects/index', [
-            'projects' => $projects
+            'projects' => $projects,
+            'filters' => $request->only(['type', 'is_featured', 'status', 'tech_stack', 'search']),
+            'availableTechStacks' => $allTechStacks,
         ]);
     }
 

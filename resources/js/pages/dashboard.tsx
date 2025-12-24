@@ -153,7 +153,7 @@ export default function Dashboard({ stats, recentActivities, revenueChart, filte
                             <CardTitle>Recent Activity</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[350px] overflow-y-auto pr-4 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40 transition-colors">
+                            <div className="h-[425px] overflow-y-auto pr-4 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40 transition-colors">
                                 {recentActivities && recentActivities.length > 0 ? (
                                     recentActivities.map((activity, i) => (
                                         <div key={i} className="flex items-center">

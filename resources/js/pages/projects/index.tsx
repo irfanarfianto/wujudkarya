@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from "@/components/ui/input";
 import {
     Table,
     TableBody,
@@ -10,40 +11,212 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { PaginatedData, Project } from '@/types';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2, X, Layers, Activity, Star, Code, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Projects', href: '/projects' },
 ];
 
-export default function ProjectsIndex({ projects }: { projects: PaginatedData<Project> }) {
-    const handleDelete = (project: Project) => {
-        if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
-            router.delete(`/projects/${project.id}`);
+interface ProjectsIndexProps {
+    projects: PaginatedData<Project>;
+    filters?: {
+        type?: string;
+        status?: string;
+        is_featured?: string;
+        tech_stack?: string;
+        search?: string;
+    };
+    availableTechStacks?: string[];
+}
+
+export default function ProjectsIndex({ projects, filters = {}, availableTechStacks = [] }: ProjectsIndexProps) {
+    const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+    // Update local state when filters prop changes (e.g. after clear)
+    useEffect(() => {
+        setSearchTerm(filters.search || '');
+    }, [filters.search]);
+
+    const confirmDelete = () => {
+        if (projectToDelete) {
+            router.delete(`/projects/${projectToDelete.id}`, {
+                onFinish: () => setProjectToDelete(null),
+            });
         }
     };
+
+    const updateFilter = (key: string, value: string) => {
+        const newFilters = { ...filters, [key]: value };
+        if (value === 'all' || value === '') delete newFilters[key as keyof typeof filters];
+        
+        router.get('/projects', newFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            updateFilter('search', searchTerm);
+        }
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        router.get('/projects', {}, {
+             preserveState: true,
+             preserveScroll: true,
+             replace: true,
+        });
+    }
+
+    const hasActiveFilters = Object.keys(filters).length > 0;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Projects" />
 
             <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-                        <p className="text-muted-foreground">
-                            Manage your portfolio projects here.
-                        </p>
+                <div className="flex flex-col gap-6 mb-6">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+                            <p className="text-muted-foreground">
+                                Manage your portfolio projects here.
+                            </p>
+                        </div>
+                        <Button asChild>
+                            <Link href="/projects/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Project
+                            </Link>
+                        </Button>
                     </div>
-                    <Button asChild>
-                        <Link href="/projects/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Project
-                        </Link>
-                    </Button>
+
+                    {/* Filters */}
+                    <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between py-2">
+                        <div className="relative w-full xl:w-[300px]">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search projects..."
+                                className="pl-9 w-full bg-background"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={handleSearch}
+                            />
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-muted-foreground mr-1">Filter by:</span>
+                            
+                            <Select 
+                                value={filters.type || 'all'} 
+                                onValueChange={(val) => updateFilter('type', val)}
+                            >
+                                <SelectTrigger className="w-[160px] h-9 bg-background">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Layers className="h-3.5 w-3.5" />
+                                        <SelectValue placeholder="Type" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value="web">Web Development</SelectItem>
+                                    <SelectItem value="mobile">Mobile App</SelectItem>
+                                    <SelectItem value="system">System</SelectItem>
+                                    <SelectItem value="ui/ux">UI/UX Design</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Select 
+                                value={filters.status || 'all'} 
+                                onValueChange={(val) => updateFilter('status', val)}
+                            >
+                                <SelectTrigger className="w-[150px] h-9 bg-background">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Activity className="h-3.5 w-3.5" />
+                                        <SelectValue placeholder="Status" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="published">Published</SelectItem>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Select 
+                                value={filters.tech_stack || 'all'} 
+                                onValueChange={(val) => updateFilter('tech_stack', val)}
+                            >
+                                <SelectTrigger className="w-[160px] h-9 bg-background">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Code className="h-3.5 w-3.5" />
+                                        <SelectValue placeholder="Tech Stack" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Tech Stacks</SelectItem>
+                                    {availableTechStacks.map((tech) => (
+                                        <SelectItem key={tech} value={tech}>{tech}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <Select 
+                                value={filters.is_featured || 'all'} 
+                                onValueChange={(val) => updateFilter('is_featured', val)}
+                            >
+                                <SelectTrigger className="w-[160px] h-9 bg-background">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Star className="h-3.5 w-3.5" />
+                                        <SelectValue placeholder="Featured" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Featured</SelectItem>
+                                    <SelectItem value="true">Featured Only</SelectItem>
+                                    <SelectItem value="false">Not Featured</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {hasActiveFilters && (
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={clearFilters} 
+                                    className="h-9 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                >
+                                    <X className="mr-2 h-3.5 w-3.5" />
+                                    Reset
+                                </Button>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm">
@@ -110,7 +283,7 @@ export default function ProjectsIndex({ projects }: { projects: PaginatedData<Pr
                                                     variant="ghost" 
                                                     size="icon" 
                                                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                    onClick={() => handleDelete(project)}
+                                                    onClick={() => setProjectToDelete(project)}
                                                 >
                                                      <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -125,6 +298,25 @@ export default function ProjectsIndex({ projects }: { projects: PaginatedData<Pr
 
                 {/* Pagination */}
                 <DataTablePagination data={projects} resourceName="projects" />
+
+                <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the project
+                                <span className="font-medium text-foreground"> "{projectToDelete?.title}" </span>
+                                and remove its data from our servers.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </AppLayout>
     );

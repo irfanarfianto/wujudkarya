@@ -64,11 +64,11 @@ class LeadController extends Controller
          ]);
 
          $validated = $request->validate([
-             'name' => 'required|string|max:255',
-             'email' => 'required|email',
-             'service_interest' => 'required|string',
-             'message' => 'required|string',
-             'status' => 'required|in:new,contacted,deal,closed',
+             'name' => 'sometimes|required|string|max:255',
+             'email' => 'sometimes|required|email',
+             'service_interest' => 'sometimes|required|string',
+             'message' => 'sometimes|required|string',
+             'status' => 'sometimes|required|in:new,contacted,deal,closed',
          ]);
 
          \Log::info('✅ [LEAD UPDATE] Validation passed', [
