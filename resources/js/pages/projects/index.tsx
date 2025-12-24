@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { DataTablePagination } from '@/components/data-table-pagination';
 import { PaginatedData, Project } from '@/types';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 
@@ -19,6 +20,12 @@ const breadcrumbs = [
 ];
 
 export default function ProjectsIndex({ projects }: { projects: PaginatedData<Project> }) {
+    const handleDelete = (project: Project) => {
+        if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
+            router.delete(`/projects/${project.id}`);
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Projects" />
@@ -99,7 +106,12 @@ export default function ProjectsIndex({ projects }: { projects: PaginatedData<Pr
                                                         <Edit className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => handleDelete(project)}
+                                                >
                                                      <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -111,19 +123,8 @@ export default function ProjectsIndex({ projects }: { projects: PaginatedData<Pr
                     </Table>
                 </div>
 
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    {/* Pagination Links Simple Implementation */}
-                    {projects.links.prev && (
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={projects.links.prev}>Previous</Link>
-                        </Button>
-                    )}
-                    {projects.links.next && (
-                        <Button variant="outline" size="sm" asChild>
-                             <Link href={projects.links.next}>Next</Link>
-                        </Button>
-                    )}
-                </div>
+                {/* Pagination */}
+                <DataTablePagination data={projects} resourceName="projects" />
             </div>
         </AppLayout>
     );

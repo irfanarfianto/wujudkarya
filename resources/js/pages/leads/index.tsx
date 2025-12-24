@@ -6,7 +6,7 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { PaginatedData, Lead } from '@/types';
-import { Mail, Calendar } from 'lucide-react';
+import { Mail, Calendar, Edit, Plus } from 'lucide-react';
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -35,6 +35,12 @@ export default function LeadsIndex({ leads }: { leads: PaginatedData<Lead> }) {
                         <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
                         <p className="text-muted-foreground">Inquiries from contact form.</p>
                     </div>
+                    <Button asChild>
+                        <Link href="/leads/create">
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Lead
+                        </Link>
+                    </Button>
                 </div>
 
                 <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm">
@@ -81,9 +87,13 @@ export default function LeadsIndex({ leads }: { leads: PaginatedData<Lead> }) {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm">
-                                                Reply
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <Link href={`/leads/${lead.id}/edit`}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

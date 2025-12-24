@@ -54,11 +54,35 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'settings' => [
+                // Site Info
                 'site_name' => $settings['site_name'] ?? 'WujudKarya',
                 'site_description' => $settings['site_description'] ?? '',
+                
+                // Contact Info
                 'contact_email' => $settings['contact_email'] ?? '',
                 'contact_phone' => $settings['contact_phone'] ?? '',
+                'contact_address' => $settings['contact_address'] ?? '',
+                
+                // Bank Info
+                'bank_name' => $settings['bank_name'] ?? '',
+                'bank_account_number' => $settings['bank_account_number'] ?? '',
+                'bank_account_name' => $settings['bank_account_name'] ?? '',
+                
+                // Owner Contact
+                'owner_name' => $settings['owner_name'] ?? '',
+                'owner_phone' => $settings['owner_phone'] ?? '',
+                'owner_email' => $settings['owner_email'] ?? '',
+                
+                // Social Media
                 'social_instagram' => $settings['social_instagram'] ?? '',
+                'facebook_url' => $settings['facebook_url'] ?? '',
+                'twitter_url' => $settings['twitter_url'] ?? '',
+                'linkedin_url' => $settings['linkedin_url'] ?? '',
+                
+                // Business Info
+                'company_address' => $settings['company_address'] ?? '',
+                'tax_id' => $settings['tax_id'] ?? '',
+                'business_hours' => $settings['business_hours'] ?? '',
             ],
         ];
     }

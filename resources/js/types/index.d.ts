@@ -23,11 +23,35 @@ export interface NavItem {
 }
 
 export interface SiteSettings {
+    // Site Info
     site_name: string;
     site_description: string;
+    
+    // Contact Info
     contact_email: string;
     contact_phone: string;
+    contact_address: string;
+    
+    // Bank Info
+    bank_name: string;
+    bank_account_number: string;
+    bank_account_name: string;
+    
+    // Owner Contact
+    owner_name: string;
+    owner_phone: string;
+    owner_email: string;
+    
+    // Social Media
     social_instagram: string;
+    facebook_url: string;
+    twitter_url: string;
+    linkedin_url: string;
+    
+    // Business Info
+    company_address: string;
+    tax_id: string;
+    business_hours: string;
 }
 
 export interface SharedData {
@@ -36,6 +60,12 @@ export interface SharedData {
     auth: Auth;
     sidebarOpen: boolean;
     settings: SiteSettings;
+    flash?: {
+        success?: string;
+        error?: string;
+        warning?: string;
+        info?: string;
+    };
     [key: string]: unknown;
 }
 
@@ -53,13 +83,24 @@ export interface User {
 
 export interface PaginatedData<T> {
     data: T[];
+    current_page: number;
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
     links: {
         first: string;
         last: string;
         prev: string | null;
         next: string | null;
     };
-    meta: {
+    meta?: {
         current_page: number;
         from: number;
         last_page: number;
@@ -81,31 +122,55 @@ export interface Client {
     company: string;
     email: string;
     phone?: string;
+    address?: string;
     projects_count?: number;
 }
 
 export interface Project {
     id: number;
+    client_id: number;
     title: string;
     slug: string;
     client?: Client;
     type: string;
+    description?: string;
     tech_stack: string[];
     thumbnail?: string;
+    demo_url?: string;
     excerpt?: string;
     published_at: string | null;
     is_featured: boolean;
+    private_notes?: string;
     created_at: string;
+    updated_at: string;
+}
+
+export interface InvoiceItem {
+    id?: number;
+    invoice_id?: number;
+    description: string;
+    quantity: number;
+    price: number;
+    amount: number;
 }
 
 export interface Invoice {
     id: number;
+    client_id: number;
+    project_id?: number;
     invoice_number: string;
     client: Client;
+    project?: Project;
     issued_date: string;
     due_date: string;
+    subtotal: number;
+    tax_amount: number;
     total: number;
-    status: 'draft' | 'sent' | 'paid' | 'cancelled';
+    status: string;
+    notes?: string;
+    items?: InvoiceItem[];
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Lead {
@@ -114,6 +179,6 @@ export interface Lead {
     email: string;
     service_interest: string;
     message: string;
-    status: 'new' | 'contacted' | 'deal' | 'closed';
+    status: string;
     created_at: string;
 }

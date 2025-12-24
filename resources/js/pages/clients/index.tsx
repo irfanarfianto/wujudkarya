@@ -24,7 +24,7 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                         <p className="text-muted-foreground">Manage your customer database.</p>
                     </div>
                     <Button asChild>
-                        <Link href="#">
+                        <Link href="/clients/create">
                             <Plus className="mr-2 h-4 w-4" />
                             New Client
                         </Link>
@@ -71,8 +71,10 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" className="hover:bg-muted">
-                                                    <Edit className="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" className="hover:bg-muted" asChild>
+                                                    <Link href={`/clients/${client.id}/edit`}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
                                                 </Button>
                                             </div>
                                         </TableCell>

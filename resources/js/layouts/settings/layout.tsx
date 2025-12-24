@@ -1,32 +1,35 @@
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
 import { index as settingsIndex } from '@/routes/settings';
 import { edit } from '@/routes/profile';
-
 import { edit as editPassword } from '@/routes/user-password';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { Building2, User, KeyRound } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'General',
         href: settingsIndex(),
-        icon: null,
+        icon: Building2,
     },
     {
         title: 'Profile',
         href: edit(),
-        icon: null,
+        icon: User,
     },
     {
         title: 'Password',
         href: editPassword(),
-        icon: null,
+        icon: KeyRound,
     },
 ];
+
+const descriptions: Record<string, string> = {
+    'General': 'Site info & configurations',
+    'Profile': 'Personal information',
+    'Password': 'Security settings',
+};
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     // When server-side rendering, we only render the layout on the client...
@@ -37,45 +40,53 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const currentPath = window.location.pathname;
 
     return (
-        <div className="px-4 py-6">
-            <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
-            />
+        <div className="px-4 py-6 space-y-6">
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+                <p className="text-muted-foreground mt-2">
+                    Manage your profile and account settings
+                </p>
+            </div>
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${resolveUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isSameUrl(
-                                        currentPath,
-                                        item.href,
-                                    ),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
+            {/* Main Layout: Sidebar + Content */}
+            <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+                {/* Sidebar Navigation */}
+                <aside className="space-y-2">
+                    <nav className="space-y-1">
+                        {sidebarNavItems.map((item, index) => {
+                            const isActive = isSameUrl(currentPath, item.href);
+                            const Icon = item.icon;
+                            
+                            return (
+                                <Link
+                                    key={`${resolveUrl(item.href)}-${index}`}
+                                    href={item.href}
+                                    className={cn(
+                                        'flex items-start gap-3 px-4 py-3 rounded-lg transition-colors text-left w-full',
+                                        isActive
+                                            ? 'bg-primary/10 text-primary font-medium'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                     )}
-                                    {item.title}
+                                >
+                                    {Icon && <Icon className="size-5 mt-0.5 flex-shrink-0" />}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-medium">{item.title}</div>
+                                        <div className="text-xs text-muted-foreground mt-0.5">
+                                            {descriptions[item.title]}
+                                        </div>
+                                    </div>
                                 </Link>
-                            </Button>
-                        ))}
+                            );
+                        })}
                     </nav>
                 </aside>
 
-                <Separator className="my-6 lg:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                {/* Content Area */}
+                <div className="bg-card border rounded-lg">
+                    <div className="p-6">
                         {children}
-                    </section>
+                    </div>
                 </div>
             </div>
         </div>
