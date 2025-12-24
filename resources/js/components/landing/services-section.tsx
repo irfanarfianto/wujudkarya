@@ -70,7 +70,7 @@ export function ServicesSection() {
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
                         Solusi Digital{' '}
                         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                            Terlengkap
+                            Profesional
                         </span>
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto text-lg">

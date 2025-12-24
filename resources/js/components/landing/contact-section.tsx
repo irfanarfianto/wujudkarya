@@ -124,7 +124,7 @@ export function ContactSection() {
 
                     {/* Contact Form - 3 columns */}
                     <div className="lg:col-span-3">
-                        <div className="bg-background rounded-2xl shadow-xl p-8 border border-border">
+                        <div className="bg-background rounded-2xl p-8 border border-border/40">
                             <h3 className="text-xl font-bold mb-6">Kirim Pesan</h3>
 
                             <form onSubmit={handleSubmit} className="space-y-5">

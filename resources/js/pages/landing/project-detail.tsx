@@ -81,7 +81,7 @@ export default function ProjectDetail({ project, relatedProjects }: ProjectDetai
                             <div className="grid lg:grid-cols-3 gap-8">
                                 {/* Left: Image */}
                                 <div className="lg:col-span-2">
-                                    <div className="rounded-2xl overflow-hidden border shadow-lg bg-muted/30">
+                                    <div className="rounded-2xl overflow-hidden border border-border/40 shadow-sm bg-muted/30">
                                         {project.thumbnail ? (
                                             <img 
                                                 src={`/storage/${project.thumbnail}`}
@@ -131,7 +131,7 @@ export default function ProjectDetail({ project, relatedProjects }: ProjectDetai
 
                                 {/* Right: Project Info Card */}
                                 <div className="lg:col-span-1">
-                                    <div className="bg-background rounded-xl p-6 border shadow-sm sticky top-24 space-y-6">
+                                    <div className="rounded-xl p-6 border border-border/40 sticky top-24 space-y-6">
                                         <h3 className="font-bold text-lg">Detail Project</h3>
 
                                         {project.client && (

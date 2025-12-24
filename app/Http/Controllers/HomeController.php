@@ -11,15 +11,21 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Fetch featured or latest projects
-        $projects = Project::with('client')
-            ->whereNotNull('published_at')
-            ->where('is_featured', true)
-            ->latest('published_at')
-            ->take(6)
-            ->get();
+        // Cache featured projects for 1 hour
+        $projects = cache()->remember('featured_projects', 3600, function () {
+            return Project::with('client:id,name,company') // Only need basic client info
+                ->select('id', 'client_id', 'title', 'slug', 'thumbnail', 'description', 'published_at', 'is_featured') // Select needed columns
+                ->whereNotNull('published_at')
+                ->where('is_featured', true)
+                ->latest('published_at')
+                ->take(6)
+                ->get();
+        });
 
-        $clients = Client::select('id', 'name', 'company')->take(10)->get();
+        // Cache clients list for 1 hour
+        $clients = cache()->remember('home_clients', 3600, function () {
+            return Client::select('id', 'name', 'company')->take(10)->get();
+        });
 
         return inertia('landing/welcome', [
             'projects' => $projects,

@@ -56,7 +56,7 @@ export function AboutSection() {
                                     <h4 className="font-bold text-sm">Misi Kami</h4>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Memberikan solusi digital berkualitas tinggi dengan harga terjangkau dan layanan profesional.
+                                    Memberikan solusi digital inovatif dengan standar kualitas tinggi dan layanan prima.
                                 </p>
                             </div>
                         </div>
