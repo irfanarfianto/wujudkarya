@@ -5,7 +5,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { toast } from 'sonner';
 
 import HeadingSmall from '@/components/heading-small';
@@ -47,6 +47,9 @@ export default function Password() {
                             'current_password',
                         ]}
                         resetOnSuccess
+                        onSuccess={() => {
+                            toast.success('Password has been updated.');
+                        }}
                         onError={(errors) => {
                             if (errors.password) {
                                 passwordInput.current?.focus();
@@ -58,14 +61,7 @@ export default function Password() {
                         }}
                         className="space-y-6"
                     >
-                        {({ errors, processing, recentlySuccessful }) => {
-                            useEffect(() => {
-                                if (recentlySuccessful) {
-                                    toast.success('Password has been updated.');
-                                }
-                            }, [recentlySuccessful]);
-
-                            return (
+                        {({ errors, processing, recentlySuccessful }) => (
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="current_password">
@@ -145,8 +141,7 @@ export default function Password() {
                                     </Transition>
                                 </div>
                             </>
-                            );
-                        }}
+                        )}
                     </Form>
                 </div>
             </SettingsLayout>

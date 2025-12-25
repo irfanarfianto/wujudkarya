@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Phone, Menu, X } from 'lucide-react';
+import { Phone, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavbarProps {
@@ -29,13 +29,14 @@ export function Navbar({ siteName }: NavbarProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>, href: string) => {
         e.preventDefault();
         setIsMobileMenuOpen(false);
 
+
         // If we are not on the home page, redirect to home with anchor
         if (url !== '/' && !url.startsWith('/#')) {
-            window.location.href = `/${href}`;
+            router.visit(`/${href}`);
             return;
         }
 
@@ -108,7 +109,7 @@ export function Navbar({ siteName }: NavbarProps) {
                                 size="sm" 
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleSmoothScroll(e as any, '#kontak');
+                                    handleSmoothScroll(e, '#kontak');
                                 }}
                             >
                                 <Phone className="size-4 mr-2" />
@@ -184,7 +185,7 @@ export function Navbar({ siteName }: NavbarProps) {
                         size="default"
                         onClick={(e) => {
                             e.preventDefault();
-                            handleSmoothScroll(e as any, '#kontak');
+                            handleSmoothScroll(e, '#kontak');
                         }}
                     >
                         <Phone className="size-4 mr-2" />

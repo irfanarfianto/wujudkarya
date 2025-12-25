@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Client, Project } from '@/types';
-import { ArrowLeft, CalendarIcon } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -244,7 +244,6 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
                                 onChange={handleGalleryChange}
                                 className="cursor-pointer"
                             />
-                            {/* @ts-ignore */}
                             {errors.project_images && <p className="text-sm text-destructive">{errors.project_images}</p>}
                         </div>
 

@@ -7,7 +7,6 @@ import {
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { useAppearance, type Appearance } from '@/hooks/use-appearance';
 import { Moon, Sun, Monitor, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function ThemeToggle() {
     const { appearance, updateAppearance } = useAppearance();

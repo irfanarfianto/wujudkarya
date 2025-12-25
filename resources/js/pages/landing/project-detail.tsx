@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Project, SharedData } from '@/types';
 import { Navbar, Footer } from '@/components/landing';
-import { ArrowLeft, Calendar, Building2, ExternalLink, Briefcase, Tag, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Briefcase, Tag, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Autoplay from 'embla-carousel-autoplay';
 import {
@@ -15,7 +15,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface ProjectDetailProps {

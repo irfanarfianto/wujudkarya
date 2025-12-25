@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { PaginatedData, Client } from '@/types';
 import { Edit, Plus, Phone, Mail, Eye, MapPin, Building2, User, ArrowUpDown, Briefcase } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DrawerForm } from '@/components/ui/drawer-form';
 import { ClientForm } from '@/components/clients/client-form';
 import { DataTableToolbar } from '@/components/ui/data-table-toolbar';
@@ -52,12 +52,8 @@ export default function ClientsIndex({ clients, filters = {} }: ClientsIndexProp
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
     
-    // Search State
+    // Search State - local state for input, synced to URL on submit
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
-
-    useEffect(() => {
-        setSearchTerm(filters.search || '');
-    }, [filters.search]);
 
     const updateFilter = (key: string, value: string) => {
         const newFilters = { ...filters, [key]: value };

@@ -10,10 +10,7 @@ import { Toaster } from '@/components/ui/sonner';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => {
-        const siteName = (window as any).inertiaProps?.settings?.site_name || import.meta.env.VITE_APP_NAME || 'WujudKarya';
-        return title ? `${title} - ${siteName}` : siteName;
-    },
+    title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,

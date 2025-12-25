@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import {
     Table,
@@ -30,7 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { PaginatedData, Project, Client } from '@/types';
 import { Edit, Plus, Trash2, Layers, Activity, Star, Code } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ProjectForm } from '@/components/projects/project-form';
 import { DrawerForm } from '@/components/ui/drawer-form';
 import { DataTableToolbar } from '@/components/ui/data-table-toolbar';
@@ -81,11 +81,6 @@ export default function ProjectsIndex({ projects, filters = {}, availableTechSta
         setIsDrawerOpen(false);
         setEditingProject(null);
     };
-
-    // Update local state when filters prop changes (e.g. after clear)
-    useEffect(() => {
-        setSearchTerm(filters.search || '');
-    }, [filters.search]);
 
     const confirmDelete = () => {
         if (projectToDelete) {

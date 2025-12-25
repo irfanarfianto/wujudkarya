@@ -16,12 +16,6 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
             return new Intl.NumberFormat('id-ID').format(num);
         };
 
-        // Parse formatted string back to number
-        const parseNumber = (str: string): number => {
-            const cleaned = str.replace(/\D/g, ''); // Remove all non-digits
-            return cleaned === '' ? 0 : parseInt(cleaned, 10);
-        };
-
         // Update display value when prop value changes
         React.useEffect(() => {
             setDisplayValue(formatNumber(value));

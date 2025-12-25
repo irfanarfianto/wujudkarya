@@ -3,7 +3,6 @@ import { send } from '@/routes/verification';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import DeleteUser from '@/components/delete-user';
@@ -48,16 +47,12 @@ export default function Profile({
                         options={{
                             preserveScroll: true,
                         }}
+                        onSuccess={() => {
+                            toast.success('Profile has been updated.');
+                        }}
                         className="space-y-6"
                     >
-                        {({ processing, recentlySuccessful, errors }) => {
-                            useEffect(() => {
-                                if (recentlySuccessful) {
-                                    toast.success('Profile has been updated.');
-                                }
-                            }, [recentlySuccessful]);
-
-                            return (
+                        {({ processing, recentlySuccessful, errors }) => (
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="name">Name</Label>
@@ -146,8 +141,7 @@ export default function Profile({
                                     </Transition>
                                 </div>
                             </>
-                            );
-                        }}
+                        )}
                     </Form>
                 </div>
 

@@ -35,7 +35,7 @@ export default function LeadsIndex({ leads }: { leads: PaginatedData<Lead> }) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [updateState, setUpdateState] = useState<'idle' | 'success' | 'error'>('idle');
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: string): "default" | "secondary" | "outline" | "destructive" => {
         switch(status) {
             case 'new': return 'default'; 
             case 'contacted': return 'secondary';
@@ -122,7 +122,7 @@ export default function LeadsIndex({ leads }: { leads: PaginatedData<Lead> }) {
                                             {lead.message}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusColor(lead.status) as any}>
+                                            <Badge variant={getStatusColor(lead.status)}>
                                                 {lead.status}
                                             </Badge>
                                         </TableCell>

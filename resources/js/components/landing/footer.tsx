@@ -1,4 +1,4 @@
-import { Briefcase, Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
 import { SharedData } from '@/types';
 
 interface FooterProps {

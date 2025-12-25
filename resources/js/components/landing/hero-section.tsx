@@ -1,7 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlassCard } from '@/components/ui/aceternity';
 import { SharedData } from '@/types';
 
 export function HeroSection() {

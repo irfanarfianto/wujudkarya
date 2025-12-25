@@ -29,7 +29,7 @@ export default function InvoicesIndex({ invoices, clients, projects }: InvoicesI
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewInvoice, setPreviewInvoice] = useState<Invoice | undefined>(undefined);
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: string): "default" | "secondary" | "outline" | "destructive" => {
         switch(status) {
             case 'paid': return 'default'; 
             case 'sent': return 'secondary'; 
@@ -68,26 +68,25 @@ export default function InvoicesIndex({ invoices, clients, projects }: InvoicesI
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Invoices" />
 
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
-                        <p className="text-muted-foreground">Manage billing and payments.</p>
-                    </div>
+            <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mt-6">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold">Invoices</h1>
                     <Button onClick={openCreateDrawer}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create Invoice
                     </Button>
                 </div>
 
-                <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm">
+                <div className="rounded-md border">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Invoice #</TableHead>
+                                <TableHead>Invoice Number</TableHead>
                                 <TableHead>Client</TableHead>
+                                <TableHead>Project</TableHead>
+                                <TableHead>Issue Date</TableHead>
                                 <TableHead>Due Date</TableHead>
-                                <TableHead>Total</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -95,23 +94,29 @@ export default function InvoicesIndex({ invoices, clients, projects }: InvoicesI
                         <TableBody>
                             {invoices.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">No invoices found.</TableCell>
+                                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                                        No invoices found. Create your first invoice to get started.
+                                    </TableCell>
                                 </TableRow>
                             ) : (
                                 invoices.data.map((invoice) => (
                                     <TableRow key={invoice.id}>
-                                        <TableCell className="font-medium font-mono">
+                                        <TableCell className="font-medium">
                                             {invoice.invoice_number}
                                         </TableCell>
-                                        <TableCell>{invoice.client?.company || invoice.client?.name}</TableCell>
+                                        <TableCell>{invoice.client?.name || '-'}</TableCell>
+                                        <TableCell>{invoice.project?.title || '-'}</TableCell>
                                         <TableCell>
-                                            {new Date(invoice.due_date).toLocaleDateString()}
+                                            {new Date(invoice.issued_date).toLocaleDateString('id-ID')}
                                         </TableCell>
                                         <TableCell>
+                                            {new Date(invoice.due_date).toLocaleDateString('id-ID')}
+                                        </TableCell>
+                                        <TableCell className="text-right">
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(invoice.total)}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={getStatusColor(invoice.status) as any} className="capitalize">
+                                            <Badge variant={getStatusColor(invoice.status)} className="capitalize">
                                                 {invoice.status}
                                             </Badge>
                                         </TableCell>

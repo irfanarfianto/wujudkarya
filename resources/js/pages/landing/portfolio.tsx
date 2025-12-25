@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Project, SharedData, PaginatedData } from '@/types';
 import { Navbar, Footer } from '@/components/landing';
-import { Briefcase, Calendar, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Briefcase, Calendar } from 'lucide-react';
 
 interface PortfolioPageProps {
     projects: PaginatedData<Project>;

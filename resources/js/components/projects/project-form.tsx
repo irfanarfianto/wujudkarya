@@ -70,7 +70,7 @@ export function ProjectForm({ project, clients, onSuccess, formId, hideSubmit = 
             setThumbnailPreview(null);
             setGalleryPreviews([]);
         }
-    }, [project]);
+    }, [project, reset, setData]);
 
     const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;

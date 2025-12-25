@@ -38,7 +38,7 @@ export function ClientForm({ client, onSuccess, formId, hideSubmit = false }: Cl
         } else {
             reset();
         }
-    }, [client]);
+    }, [client, reset, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

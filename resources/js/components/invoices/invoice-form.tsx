@@ -25,7 +25,7 @@ interface InvoiceFormProps {
 export default function InvoiceForm({ invoice, clients, projects, onSuccess }: InvoiceFormProps) {
     const isEditing = !!invoice;
     
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, processing, errors } = useForm({
         client_id: invoice?.client_id?.toString() || '',
         project_id: invoice?.project_id?.toString() || '',
         invoice_number: invoice?.invoice_number || '',
@@ -100,11 +100,13 @@ export default function InvoiceForm({ invoice, clients, projects, onSuccess }: I
 
         if (isEditing) {
             // For edit, we need to use router.put with the data
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             router.put(`/invoices/${invoice.id}`, submitData as any, {
                 onSuccess: () => onSuccess?.(),
             });
         } else {
             // For create, use router.post
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             router.post('/invoices', submitData as any, {
                 onSuccess: () => onSuccess?.(),
             });

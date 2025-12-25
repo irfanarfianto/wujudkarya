@@ -22,7 +22,37 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export default function Dashboard({ stats, recentActivities, revenueChart, filters }: { stats: any, recentActivities: any[], revenueChart: any[], filters: any }) {
+interface DashboardStats {
+    projects: number;
+    clients: number;
+    revenue: number;
+    leads: number;
+}
+
+interface RecentActivity {
+    type: 'lead' | 'project' | 'client';
+    title: string;
+    description: string;
+    created_at: string;
+}
+
+interface RevenueChartData {
+    name: string;
+    total: number;
+}
+
+interface DashboardFilters {
+    range?: number;
+}
+
+interface DashboardProps {
+    stats: DashboardStats;
+    recentActivities: RecentActivity[];
+    revenueChart: RevenueChartData[];
+    filters: DashboardFilters;
+}
+
+export default function Dashboard({ stats, recentActivities, revenueChart, filters }: DashboardProps) {
     
     const handleRangeChange = (value: string) => {
         router.get('/dashboard', { range: value }, {

@@ -83,7 +83,7 @@ export default function ProjectsCreate({ clients }: { clients: Client[] }) {
                         ...data,
                         tech_stack: data.tech_stack_input.split(',').map(s => s.trim()).filter(s => s)
                     };
-                    // @ts-ignore
+                    // @ts-expect-error - Inertia form post method signature mismatch with payload structure
                     post('/projects', { data: payload }); // Wait, post signature is (url, options). Data is taken from state.
                 }} className="space-y-8 bg-white dark:bg-gray-900 p-6 rounded-lg border shadow-sm">
                     
@@ -200,7 +200,6 @@ export default function ProjectsCreate({ clients }: { clients: Client[] }) {
                                 onChange={handleGalleryChange}
                                 className="cursor-pointer"
                             />
-                            {/* @ts-ignore */}
                             {errors.project_images && <p className="text-sm text-destructive">{errors.project_images}</p>}
                         </div>
 
