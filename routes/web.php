@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('invoices', \App\Http\Controllers\InvoiceController::class);
     Route::resource('leads', \App\Http\Controllers\LeadController::class);
     
+    Route::get('content', [\App\Http\Controllers\ContentController::class, 'index'])->name('content.index');
+    Route::post('content', [\App\Http\Controllers\ContentController::class, 'update'])->name('content.update');
+    
     Route::get('settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
 });

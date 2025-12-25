@@ -140,9 +140,7 @@ export default function ClientsIndex({ clients, filters = {} }: ClientsIndexProp
                         <SelectTrigger className="w-[180px] h-9 bg-background">
                             <div className="flex items-center gap-2 text-muted-foreground w-full">
                                 <ArrowUpDown className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="truncate">
-                                    <SelectValue placeholder="Newest Added" />
-                                </span>
+                                <SelectValue placeholder="Newest Added" />
                             </div>
                         </SelectTrigger>
                         <SelectContent>
@@ -161,13 +159,7 @@ export default function ClientsIndex({ clients, filters = {} }: ClientsIndexProp
                         <SelectTrigger className="w-[180px] h-9 bg-background">
                             <div className="flex items-center gap-2 text-muted-foreground w-full">
                                 <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="truncate">
-                                     {{
-                                        'all': 'All Clients',
-                                        'yes': 'With Projects',
-                                        'no': 'Without Projects'
-                                    }[filters.has_projects || 'all']}
-                                </span>
+                                <SelectValue placeholder="All Clients" />
                             </div>
                         </SelectTrigger>
                         <SelectContent>

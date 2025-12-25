@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Briefcase, FileText, Folder, Inbox, LayoutGrid, Users, Settings } from 'lucide-react';
+import { BookOpen, Briefcase, FileText, Folder, Inbox, LayoutGrid, Users, Settings, FileEdit } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -42,6 +42,11 @@ const mainNavItems: NavItem[] = [
         title: 'Leads',
         href: '/leads',
         icon: Inbox,
+    },
+    {
+        title: 'Content',
+        href: '/content',
+        icon: FileEdit,
     },
     {
         title: 'Settings',

@@ -56,12 +56,12 @@ class HomeController extends Controller
             abort(404);
         }
 
-        $project->load(['client', 'images' => function($query) {
+        $project->load(['client:id,name,company', 'images' => function($query) {
             $query->orderBy('sort_order')->orderBy('id');
         }]);
 
         // Get related projects (same client or featured)
-        $relatedProjects = Project::with('client')
+        $relatedProjects = Project::with('client:id,name,company')
             ->whereNotNull('published_at')
             ->where('id', '!=', $project->id)
             ->where(function($query) use ($project) {

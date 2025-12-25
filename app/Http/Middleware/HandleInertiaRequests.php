@@ -50,7 +50,12 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'email_verified_at' => $request->user()->email_verified_at,
+                ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'settings' => [
@@ -83,6 +88,27 @@ class HandleInertiaRequests extends Middleware
                 'company_address' => $settings['company_address'] ?? '',
                 'tax_id' => $settings['tax_id'] ?? '',
                 'business_hours' => $settings['business_hours'] ?? '',
+
+                // Landing Page - Hero
+                'hero_tagline'      => $settings['hero_tagline'] ?? 'Partner Digital Terpercaya',
+                'hero_headline_1'   => $settings['hero_headline_1'] ?? 'Mewujudkan Ide',
+                'hero_headline_2'   => $settings['hero_headline_2'] ?? 'Menjadi Digital',
+                'hero_description'  => $settings['hero_description'] ?? 'Kami membantu UMKM, startup, dan perusahaan mewujudkan ide digital melalui web development dan mobile app development yang profesional.',
+                'hero_cta_primary'  => $settings['hero_cta_primary'] ?? 'Konsultasi Gratis',
+                'hero_cta_secondary'=> $settings['hero_cta_secondary'] ?? 'Lihat Portofolio',
+
+                // Landing Page - Stats
+                'stats_projects_count' => $settings['stats_projects_count'] ?? '50+',
+                'stats_clients_count'  => $settings['stats_clients_count'] ?? '30+',
+                'stats_years_exp'      => $settings['stats_years_exp'] ?? '5+',
+
+                // Landing Page - About
+                'about_title'         => $settings['about_title'] ?? 'Siapa WujudKarya?',
+                'about_subtitle'      => $settings['about_subtitle'] ?? 'Partner Digital Terpercaya Anda',
+                'about_description_1' => $settings['about_description_1'] ?? '',
+                'about_description_2' => $settings['about_description_2'] ?? '',
+                'vision'              => $settings['vision'] ?? '',
+                'mission'             => $settings['mission'] ?? '',
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

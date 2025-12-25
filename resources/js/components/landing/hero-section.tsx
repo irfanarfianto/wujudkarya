@@ -1,12 +1,12 @@
+import { usePage } from '@inertiajs/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/aceternity';
+import { SharedData } from '@/types';
 
-interface HeroSectionProps {
-    siteDescription?: string;
-}
-
-export function HeroSection({ siteDescription }: HeroSectionProps) {
+export function HeroSection() {
+    const { settings } = usePage<SharedData>().props;
+    
     const scrollToSection = (sectionId: string) => {
         const element = document.querySelector(sectionId);
         if (element) {
@@ -33,25 +33,23 @@ export function HeroSection({ siteDescription }: HeroSectionProps) {
                         className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary mb-8 backdrop-blur-sm animate-fade-in"
                     >
                         <Sparkles className="size-4" />
-                        <span>Partner Digital Terpercaya</span>
+                        <span>{settings.hero_tagline || 'Partner Digital Terpercaya'}</span>
                     </div>
 
                     {/* Main Heading */}
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 animate-fade-in-up leading-none">
                         <span className="inline-block">
-                            Mewujudkan Ide
+                            {settings.hero_headline_1 || 'Mewujudkan Ide'}
                         </span>
                         <br />
                         <span className="inline-block bg-gradient-to-r from-primary via-primary to-primary/60 bg-clip-text text-transparent pb-2">
-                            Menjadi Digital
+                            {settings.hero_headline_2 || 'Menjadi Digital'}
                         </span>
                     </h1>
 
                     {/* Description */}
                     <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-in-up animation-delay-200">
-                        Kami membantu <span className="text-foreground font-semibold">UMKM, startup, dan perusahaan</span> mewujudkan 
-                        ide digital melalui <span className="text-foreground font-semibold">web development</span> dan{' '}
-                        <span className="text-foreground font-semibold">mobile app development</span> yang profesional.
+                        {settings.hero_description || 'Kami membantu UMKM, startup, dan perusahaan mewujudkan ide digital melalui web development dan mobile app development yang profesional.'}
                     </p>
 
                     {/* CTA Buttons */}
@@ -62,7 +60,7 @@ export function HeroSection({ siteDescription }: HeroSectionProps) {
                             onClick={() => scrollToSection('#kontak')}
                         >
                             <span className="flex items-center gap-2">
-                                Konsultasi Gratis
+                                {settings.hero_cta_primary || 'Konsultasi Gratis'}
                                 <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                             </span>
                         </Button>
@@ -73,16 +71,16 @@ export function HeroSection({ siteDescription }: HeroSectionProps) {
                             className="h-14 px-8 text-base border-2"
                             onClick={() => scrollToSection('#portofolio')}
                         >
-                            Lihat Portfolio
+                            {settings.hero_cta_secondary || 'Lihat Portfolio'}
                         </Button>
                     </div>
 
                     {/* Stats with Clean Cards */}
                     <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
                         {[
-                            { value: '50+', label: 'Project Selesai' },
-                            { value: '30+', label: 'Klien Puas' },
-                            { value: '5+', label: 'Tahun Pengalaman' },
+                            { value: settings.stats_projects_count || '50+', label: 'Project Selesai' },
+                            { value: settings.stats_clients_count || '30+', label: 'Klien Puas' },
+                            { value: settings.stats_years_exp || '5+', label: 'Tahun Pengalaman' },
                         ].map((stat, i) => (
                             <div 
                                 key={i}

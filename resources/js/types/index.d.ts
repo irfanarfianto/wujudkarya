@@ -52,6 +52,27 @@ export interface SiteSettings {
     company_address: string;
     tax_id: string;
     business_hours: string;
+
+    // Landing Page - Hero
+    hero_tagline?: string;
+    hero_headline_1?: string;
+    hero_headline_2?: string;
+    hero_description?: string;
+    hero_cta_primary?: string;
+    hero_cta_secondary?: string;
+
+    // Landing Page - Stats
+    stats_projects_count?: string;
+    stats_clients_count?: string;
+    stats_years_exp?: string;
+
+    // Landing Page - About
+    about_title?: string;
+    about_subtitle?: string;
+    about_description_1?: string;
+    about_description_2?: string;
+    vision?: string;
+    mission?: string;
 }
 
 export interface SharedData {

@@ -59,7 +59,7 @@ export default function Welcome({ projects }: WelcomeProps) {
             <Navbar siteName={settings.site_name} />
 
             <main className="pt-16">
-                <HeroSection siteDescription={settings.site_description} />
+                <HeroSection />
                 <ServicesSection />
                 <PortfolioSection projects={projects} />
                 <AboutSection />

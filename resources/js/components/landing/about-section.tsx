@@ -1,4 +1,6 @@
+import { usePage } from '@inertiajs/react';
 import { CheckCircle2, Target, Eye, Users } from 'lucide-react';
+import { SharedData } from '@/types';
 
 const whyChooseUs = [
     'Fokus pada solusi yang tepat untuk bisnis Anda',
@@ -8,6 +10,8 @@ const whyChooseUs = [
 ];
 
 export function AboutSection() {
+    const { settings } = usePage<SharedData>().props;
+
     return (
         <section id="tentang" className="py-20 bg-background">
             <div className="container mx-auto px-4">
@@ -17,7 +21,7 @@ export function AboutSection() {
                         Tentang Kami
                     </span>
                     <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-                        Partner Digital Terpercaya Anda
+                        {settings.about_subtitle || 'Partner Digital Terpercaya Anda'}
                     </h2>
                 </div>
 
@@ -27,14 +31,12 @@ export function AboutSection() {
                     <div className="space-y-8">
                         {/* Company Story */}
                         <div>
-                            <h3 className="text-2xl font-bold mb-4">Siapa WujudKarya?</h3>
+                            <h3 className="text-2xl font-bold mb-4">{settings.about_title || 'Siapa WujudKarya?'}</h3>
                             <p className="text-muted-foreground leading-relaxed mb-4">
-                                WujudKarya adalah digital agency yang berfokus pada pengembangan <strong className="text-foreground">web dan mobile app</strong> untuk 
-                                membantu <strong className="text-foreground">UMKM, startup, dan perusahaan</strong> mewujudkan ide digital mereka.
+                                {settings.about_description_1 || 'WujudKarya adalah digital agency yang berfokus pada pengembangan web dan mobile app untuk membantu UMKM, startup, dan perusahaan mewujudkan ide digital mereka.'}
                             </p>
                             <p className="text-muted-foreground leading-relaxed">
-                                Dengan pengalaman lebih dari <strong className="text-primary">5 tahun</strong> dan <strong className="text-primary">50+ project</strong> yang telah diselesaikan, 
-                                kami memahami kebutuhan bisnis Indonesia dan siap menjadi partner teknologi Anda.
+                                {settings.about_description_2 || 'Dengan pengalaman yang solid dan puluhan project yang telah diselesaikan, kami memahami kebutuhan bisnis Indonesia dan siap menjadi partner teknologi Anda.'}
                             </p>
                         </div>
 
@@ -46,7 +48,7 @@ export function AboutSection() {
                                     <h4 className="font-bold text-sm">Visi Kami</h4>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Menjadi partner digital terpercaya yang membantu bisnis Indonesia bertransformasi di era digital.
+                                    {settings.vision || 'Menjadi partner digital terpercaya yang membantu bisnis Indonesia bertransformasi di era digital.'}
                                 </p>
                             </div>
 
@@ -56,7 +58,7 @@ export function AboutSection() {
                                     <h4 className="font-bold text-sm">Misi Kami</h4>
                                 </div>
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Memberikan solusi digital inovatif dengan standar kualitas tinggi dan layanan prima.
+                                    {settings.mission || 'Memberikan solusi digital inovatif dengan standar kualitas tinggi dan layanan prima.'}
                                 </p>
                             </div>
                         </div>
