@@ -1,4 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import * as React from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Client, Project } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface EditProjectProps {
     project: Project;
@@ -37,7 +42,33 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
         published_at: project.published_at || '',
         is_featured: project.is_featured || false,
         thumbnail: null as File | null,
+        project_images: [] as File[],
     });
+
+    // Initialize with existing thumbnail
+    const [thumbnailPreview, setThumbnailPreview] = React.useState<string | null>(project.thumbnail || null);
+    const [galleryPreviews, setGalleryPreviews] = React.useState<string[]>([]);
+
+    const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files ? e.target.files[0] : null;
+        setData('thumbnail', file);
+        if (file) {
+            setThumbnailPreview(URL.createObjectURL(file));
+        } else if (project.thumbnail && !file) {
+            // Revert to existing thumbnail if selection cleared
+           setThumbnailPreview(project.thumbnail);
+        } else {
+             setThumbnailPreview(null);
+        }
+    };
+
+    const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files ? Array.from(e.target.files) : [];
+        setData('project_images', files);
+        
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        setGalleryPreviews(newPreviews);
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -146,22 +177,8 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
                             )}
                         </div>
 
-                        {/* Current Thumbnail Preview */}
-                        {project.thumbnail && (
-                            <div className="col-span-2 space-y-2">
-                                <Label>Current Thumbnail</Label>
-                                <div className="relative h-48 w-full overflow-hidden rounded-lg border">
-                                    <img
-                                        src={project.thumbnail}
-                                        alt={project.title}
-                                        className="h-full w-full object-cover"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
                         {/* Thumbnail */}
-                        <div className="col-span-2 space-y-2">
+                        <div className="col-span-2 space-y-4">
                             <Label
                                 htmlFor="thumbnail"
                                 className="flex items-center gap-1"
@@ -170,21 +187,25 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
                                     ? 'Replace Thumbnail'
                                     : 'Thumbnail Image'}
                                 <span className="text-xs font-normal text-muted-foreground">
-                                    (Optional)
+                                    (1280x720 px recommended)
                                 </span>
                             </Label>
+
+                            {thumbnailPreview && (
+                                <div className="relative aspect-video w-full max-w-sm overflow-hidden rounded-lg border">
+                                    <img 
+                                        src={thumbnailPreview} 
+                                        alt="Thumbnail Preview" 
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            )}
+
                             <Input
                                 id="thumbnail"
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) =>
-                                    setData(
-                                        'thumbnail',
-                                        e.target.files
-                                            ? e.target.files[0]
-                                            : null,
-                                    )
-                                }
+                                onChange={handleThumbnailChange}
                                 className="cursor-pointer"
                             />
                             {errors.thumbnail && (
@@ -192,6 +213,39 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
                                     {errors.thumbnail}
                                 </p>
                             )}
+                        </div>
+
+                         {/* Project Images (Gallery) */}
+                         <div className="space-y-4 col-span-2">
+                            <Label htmlFor="project_images" className="flex items-center gap-1">
+                                Project Gallery Images
+                                <span className="text-muted-foreground text-xs font-normal">(Multiple allowed, 1280x720 px)</span>
+                            </Label>
+
+                            {galleryPreviews.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {galleryPreviews.map((preview, index) => (
+                                        <div key={index} className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                                            <img 
+                                                src={preview} 
+                                                alt={`Gallery Preview ${index + 1}`} 
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <Input 
+                                id="project_images" 
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleGalleryChange}
+                                className="cursor-pointer"
+                            />
+                            {/* @ts-ignore */}
+                            {errors.project_images && <p className="text-sm text-destructive">{errors.project_images}</p>}
                         </div>
 
                         {/* Description */}
@@ -251,16 +305,37 @@ export default function ProjectsEdit({ project, clients }: EditProjectProps) {
                         </div>
 
                         {/* Published Date */}
-                        <div className="space-y-2">
+                        <div className="flex flex-col space-y-2">
                             <Label htmlFor="published_at">Published Date</Label>
-                            <Input
-                                id="published_at"
-                                type="date"
-                                value={data.published_at}
-                                onChange={(e) =>
-                                    setData('published_at', e.target.value)
-                                }
-                            />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "w-full pl-3 text-left font-normal",
+                                            !data.published_at && "text-muted-foreground"
+                                        )}
+                                    >
+                                        {data.published_at ? (
+                                            format(new Date(data.published_at), "PPP")
+                                        ) : (
+                                            <span>Pick a date</span>
+                                        )}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={data.published_at ? new Date(data.published_at) : undefined}
+                                        onSelect={(date) => setData('published_at', date ? format(date, 'yyyy-MM-dd') : '')}
+                                        disabled={(date) =>
+                                            date > new Date() || date < new Date("1900-01-01")
+                                        }
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
                             {errors.published_at && (
                                 <p className="text-sm text-destructive">
                                     {errors.published_at}

@@ -1,9 +1,16 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Sheet,
     SheetContent,
@@ -14,21 +21,92 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { PaginatedData, Client } from '@/types';
-import { Edit, Plus, Phone, Mail, Eye, MapPin, Building2, User } from 'lucide-react';
-import { useState } from 'react';
+import { Edit, Plus, Phone, Mail, Eye, MapPin, Building2, User, ArrowUpDown, Briefcase } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { DrawerForm } from '@/components/ui/drawer-form';
+import { ClientForm } from '@/components/clients/client-form';
+import { DataTableToolbar } from '@/components/ui/data-table-toolbar';
+
+import { DataTablePagination } from '@/components/data-table-pagination';
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Clients', href: '/clients' },
 ];
 
-export default function ClientsIndex({ clients }: { clients: PaginatedData<Client> }) {
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
+interface ClientsIndexProps {
+    clients: PaginatedData<Client>;
+    filters?: {
+        search?: string;
+        sort?: string;
+        has_projects?: string;
+    };
+}
 
-    const openSheet = (client: Client) => {
+export default function ClientsIndex({ clients, filters = {} }: ClientsIndexProps) {
+    // View Details Sheet State
+    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+    const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
+
+    // Create/Edit Drawer State
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
+    
+    // Search State
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+    useEffect(() => {
+        setSearchTerm(filters.search || '');
+    }, [filters.search]);
+
+    const updateFilter = (key: string, value: string) => {
+        const newFilters = { ...filters, [key]: value };
+        if (value === 'all' || value === '') delete newFilters[key as keyof typeof filters];
+        if (key === 'sort' && value === 'newest') delete newFilters[key as keyof typeof filters];
+        
+        router.get('/clients', newFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const handleSearchSubmit = () => {
+        updateFilter('search', searchTerm);
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        router.get('/clients', {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }
+
+    const openViewSheet = (client: Client) => {
         setSelectedClient(client);
-        setIsSheetOpen(true);
+        setIsViewSheetOpen(true);
+    };
+
+    const openCreateDrawer = () => {
+        setEditingClient(null);
+        setIsDrawerOpen(true);
+    };
+
+    const openEditDrawer = (client: Client) => {
+        setEditingClient(client);
+        setIsDrawerOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setIsDrawerOpen(false);
+        setEditingClient(null);
+    };
+
+    const handleFormSuccess = () => {
+        setIsDrawerOpen(false);
+        setEditingClient(null);
     };
 
     return (
@@ -41,15 +119,66 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                         <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
                         <p className="text-muted-foreground">Manage your customer database.</p>
                     </div>
-                    <Button asChild>
-                        <Link href="/clients/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Client
-                        </Link>
+                    <Button onClick={openCreateDrawer}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        New Client
                     </Button>
                 </div>
 
-                <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm">
+                <DataTableToolbar
+                    searchPlaceholder="Search clients..."
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onSearchSubmit={handleSearchSubmit}
+                    onReset={clearFilters}
+                    hasFilter={Object.keys(filters).length > 0} 
+                >
+                    <Select 
+                        value={filters.sort || 'newest'} 
+                        onValueChange={(val) => updateFilter('sort', val)}
+                    >
+                        <SelectTrigger className="w-[180px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground w-full">
+                                <ArrowUpDown className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate">
+                                    <SelectValue placeholder="Newest Added" />
+                                </span>
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="newest">Newest Added</SelectItem>
+                            <SelectItem value="oldest">Oldest Added</SelectItem>
+                            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+                            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+                            <SelectItem value="projects_desc">Most Projects</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select 
+                        value={filters.has_projects || 'all'} 
+                        onValueChange={(val) => updateFilter('has_projects', val)}
+                    >
+                        <SelectTrigger className="w-[180px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground w-full">
+                                <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate">
+                                     {{
+                                        'all': 'All Clients',
+                                        'yes': 'With Projects',
+                                        'no': 'Without Projects'
+                                    }[filters.has_projects || 'all']}
+                                </span>
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Clients</SelectItem>
+                            <SelectItem value="yes">With Projects</SelectItem>
+                            <SelectItem value="no">Without Projects</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </DataTableToolbar>
+
+                <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm mt-6">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -93,14 +222,17 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                                                     variant="ghost" 
                                                     size="icon" 
                                                     className="hover:bg-muted" 
-                                                    onClick={() => openSheet(client)}
+                                                    onClick={() => openViewSheet(client)}
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="hover:bg-muted" asChild>
-                                                    <Link href={`/clients/${client.id}/edit`}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="hover:bg-muted"
+                                                    onClick={() => openEditDrawer(client)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -111,21 +243,10 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                     </Table>
                 </div>
                   
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    {clients.links.prev && (
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={clients.links.prev}>Previous</Link>
-                        </Button>
-                    )}
-                    {clients.links.next && (
-                        <Button variant="outline" size="sm" asChild>
-                             <Link href={clients.links.next}>Next</Link>
-                        </Button>
-                    )}
-                </div>
+                <DataTablePagination data={clients} resourceName="clients" />
 
-                {/* Client Details Sheet */}
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                {/* Client Details Sheet (View Only) */}
+                <Sheet open={isViewSheetOpen} onOpenChange={setIsViewSheetOpen}>
                     <SheetContent className="sm:max-w-[500px] overflow-y-auto p-6">
                         <SheetHeader className="mb-6 p-0">
                             <SheetTitle>Client Details</SheetTitle>
@@ -200,6 +321,36 @@ export default function ClientsIndex({ clients }: { clients: PaginatedData<Clien
                         </SheetFooter>
                     </SheetContent>
                 </Sheet>
+
+                {/* Create/Edit Drawer */}
+                <DrawerForm
+                    open={isDrawerOpen}
+                    onOpenChange={setIsDrawerOpen}
+                    title={editingClient ? 'Edit Client' : 'New Client'}
+                    description={editingClient 
+                        ? 'Make changes to client details here. Click save when you\'re done.' 
+                        : 'Add a new client to your database. Click create when you\'re done.'}
+                    width="xl"
+                    footer={
+                        <div className="flex w-full justify-end gap-2">
+                            <Button variant="outline" onClick={handleDrawerClose}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" form="client-form">
+                                {editingClient ? 'Save Changes' : 'Create Client'}
+                            </Button>
+                        </div>
+                    }
+                >
+                    {isDrawerOpen && (
+                        <ClientForm 
+                            client={editingClient} 
+                            onSuccess={handleFormSuccess}
+                            formId="client-form"
+                            hideSubmit={true}
+                        />
+                    )}
+                </DrawerForm>
             </div>
         </AppLayout>
     );

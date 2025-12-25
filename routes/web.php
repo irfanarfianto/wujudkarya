@@ -6,7 +6,8 @@ use Laravel\Fortify\Features;
 
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::post('/contact', [\App\Http\Controllers\HomeController::class, 'submitContact'])->name('contact.submit');
-Route::get('/portfolio/{project:slug}', [\App\Http\Controllers\HomeController::class, 'showProject'])->name('portfolio.show');
+Route::get('/projects-gallery', [\App\Http\Controllers\HomeController::class, 'portfolio'])->name('portfolio.index');
+Route::get('/projects-gallery/{project:slug}', [\App\Http\Controllers\HomeController::class, 'showProject'])->name('portfolio.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');

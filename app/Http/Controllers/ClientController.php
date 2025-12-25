@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Clients\StoreClientRequest;
+use App\Http\Requests\Clients\UpdateClientRequest;
 use App\Models\Client;
 use Illuminate\Http\Request;
 
@@ -10,14 +12,57 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::withCount('projects')
-            ->latest()
-            ->paginate(10);
+        $query = Client::withCount('projects');
+
+        if ($request->has('has_projects') && $request->has_projects !== 'all') {
+            if ($request->has_projects === 'yes') {
+                $query->has('projects');
+            } elseif ($request->has_projects === 'no') {
+                $query->doesntHave('projects');
+            }
+        }
+
+        // Search Filter
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'name_asc':
+                    $query->orderBy('name', 'asc');
+                    break;
+                case 'name_desc':
+                    $query->orderBy('name', 'desc');
+                    break;
+                case 'projects_desc':
+                    $query->orderBy('projects_count', 'desc');
+                    break;
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $clients = $query->paginate(10)
+            ->withQueryString();
 
         return inertia('clients/index', [
-            'clients' => $clients
+            'clients' => $clients,
+            'filters' => $request->only(['search', 'sort', 'has_projects']),
         ]);
     }
 
@@ -32,15 +77,9 @@ class ClientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreClientRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:clients,email',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         Client::create($validated);
 
@@ -68,7 +107,7 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Client $client)
+    public function update(UpdateClientRequest $request, Client $client)
     {
         \Log::info('🚀 [CLIENT UPDATE] Request received', [
             'client_id' => $client->id,
@@ -80,13 +119,7 @@ class ClientController extends Controller
             'all_data' => $request->except(['_token']),
         ]);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:clients,email,' . $client->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         \Log::info('✅ [CLIENT UPDATE] Validation passed', [
             'validated_data' => $validated

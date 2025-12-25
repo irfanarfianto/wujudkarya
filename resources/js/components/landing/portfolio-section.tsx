@@ -37,6 +37,15 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
                         </div>
                     )}
                 </div>
+
+                <div className="mt-12 text-center">
+                    <Link href="/projects-gallery">
+                        <Button variant="outline" size="lg" className="min-w-[200px]">
+                            Lihat Semua Project
+                            <ExternalLink className="ml-2 size-4" />
+                        </Button>
+                    </Link>
+                </div>
             </div>
         </section>
     );
@@ -44,10 +53,10 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
 
 function ProjectCard({ project }: { project: Project }) {
     return (
-        <Link href={`/portfolio/${project.slug}`} className="block">
+        <Link href={`/projects-gallery/${project.slug}`} className="block">
             <div className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-sm hover:border-primary/20 transition-all duration-300 h-full">
                 {/* Project Image */}
-                <div className="aspect-[4/3] bg-gradient-to-br from-primary/5 to-primary/10 relative overflow-hidden">
+                <div className="aspect-video bg-gradient-to-br from-primary/5 to-primary/10 relative overflow-hidden">
                     {project.thumbnail ? (
                         <img 
                             src={project.thumbnail} 

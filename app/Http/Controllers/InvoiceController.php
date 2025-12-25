@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Invoices\StoreInvoiceRequest;
+use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 
@@ -38,21 +40,9 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreInvoiceRequest $request)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'project_id' => 'nullable|exists:projects,id',
-            'invoice_number' => 'required|string|unique:invoices,invoice_number',
-            'issued_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issued_date',
-            'status' => 'required|in:draft,sent,paid,cancelled',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.price' => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         // Calculate totals
         $subtotal = 0;
@@ -101,21 +91,9 @@ class InvoiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Invoice $invoice)
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'project_id' => 'nullable|exists:projects,id',
-            'invoice_number' => 'required|string|unique:invoices,invoice_number,' . $invoice->id,
-            'issued_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:issued_date',
-            'status' => 'required|in:draft,sent,paid,cancelled',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.price' => 'required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         // Calculate totals
         $subtotal = 0;

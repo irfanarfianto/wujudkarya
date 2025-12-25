@@ -141,6 +141,7 @@ export interface Project {
     published_at: string | null;
     is_featured: boolean;
     private_notes?: string;
+    images?: { id: number; image_path: string }[];
     created_at: string;
     updated_at: string;
 }

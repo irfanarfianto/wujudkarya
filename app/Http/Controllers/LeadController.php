@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Leads\StoreLeadRequest;
+use App\Http\Requests\Leads\UpdateLeadRequest;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 
@@ -25,17 +27,9 @@ class LeadController extends Controller
          return inertia('leads/create');
      }
 
-     public function store(Request $request)
+     public function store(StoreLeadRequest $request)
      {
-         $validated = $request->validate([
-             'name' => 'required|string|max:255',
-             'email' => 'required|email',
-             'service_interest' => 'required|string',
-             'message' => 'required|string',
-             'status' => 'nullable|in:new,contacted,deal,closed',
-         ]);
-
-         $validated['status'] = $validated['status'] ?? 'new';
+         $validated = $request->validated();
 
          Lead::create($validated);
 
@@ -51,7 +45,7 @@ class LeadController extends Controller
          ]);
      }
 
-     public function update(Request $request, Lead $lead)
+     public function update(UpdateLeadRequest $request, Lead $lead)
      {
          \Log::info('🚀 [LEAD UPDATE] Request received', [
              'lead_id' => $lead->id,
@@ -63,13 +57,7 @@ class LeadController extends Controller
              'all_data' => $request->except(['_token']),
          ]);
 
-         $validated = $request->validate([
-             'name' => 'sometimes|required|string|max:255',
-             'email' => 'sometimes|required|email',
-             'service_interest' => 'sometimes|required|string',
-             'message' => 'sometimes|required|string',
-             'status' => 'sometimes|required|in:new,contacted,deal,closed',
-         ]);
+         $validated = $request->validated();
 
          \Log::info('✅ [LEAD UPDATE] Validation passed', [
              'validated_data' => $validated

@@ -1,9 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Project, SharedData } from '@/types';
 import { Navbar, Footer } from '@/components/landing';
-import { ArrowLeft, Calendar, Building2, ExternalLink, Briefcase, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Building2, ExternalLink, Briefcase, Tag, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Autoplay from 'embla-carousel-autoplay';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ProjectDetailProps {
     project: Project;
@@ -12,6 +25,7 @@ interface ProjectDetailProps {
 
 export default function ProjectDetail({ project, relatedProjects }: ProjectDetailProps) {
     const { settings } = usePage<{ settings: SharedData['settings'] }>().props;
+    const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
     // Enforce light mode
     useEffect(() => {
@@ -56,47 +70,137 @@ export default function ProjectDetail({ project, relatedProjects }: ProjectDetai
                             <div className="mb-8">
                                 <h1 className="text-4xl md:text-5xl font-bold mb-4">{project.title}</h1>
                                 
-                                <div className="flex flex-wrap gap-4 text-sm">
-                                    {project.client && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Building2 className="size-4" />
-                                            <span>{project.client.company || project.client.name}</span>
-                                        </div>
-                                    )}
-                                    {project.published_at && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Calendar className="size-4" />
-                                            <span>{formatDate(project.published_at)}</span>
-                                        </div>
-                                    )}
-                                    {project.type && (
-                                        <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">
-                                            {project.type}
-                                        </span>
-                                    )}
-                                </div>
+
                             </div>
 
                             {/* Main Content Grid */}
                             <div className="grid lg:grid-cols-3 gap-8">
-                                {/* Left: Image */}
+                                {/* Left: Image Carousel */}
                                 <div className="lg:col-span-2">
-                                    <div className="rounded-2xl overflow-hidden border border-border/40 shadow-sm bg-muted/30">
-                                        {project.thumbnail ? (
-                                            <img 
-                                                src={`/storage/${project.thumbnail}`}
-                                                alt={project.title}
-                                                className="w-full h-auto"
-                                            />
-                                        ) : (
-                                            <div className="aspect-video flex items-center justify-center">
-                                                <div className="text-center">
-                                                    <Briefcase className="size-16 text-muted-foreground/30 mx-auto mb-4" />
-                                                    <p className="text-muted-foreground">No Image Available</p>
+                                    {/* Combine all images */}
+                                    {(() => {
+                                        const allImages = [
+                                            ...(project.thumbnail ? [{ id: 'main', image_path: project.thumbnail }] : []),
+                                            ...(project.images || [])
+                                        ];
+
+                                        if (allImages.length === 0) {
+                                            return (
+                                                <div className="rounded-2xl overflow-hidden border border-border/40 shadow-sm bg-muted/30 aspect-video relative flex items-center justify-center">
+                                                    <div className="text-center">
+                                                        <Briefcase className="size-16 text-muted-foreground/30 mx-auto mb-4" />
+                                                        <p className="text-muted-foreground">No Image Available</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                            );
+                                        }
+
+
+                                        return (
+                                            <>
+                                                <Carousel 
+                                                    className="w-full"
+                                                    plugins={[
+                                                        Autoplay({
+                                                            delay: 5000,
+                                                        }),
+                                                    ]}
+                                                >
+                                                    <CarouselContent>
+                                                        {allImages.map((image, index) => (
+                                                            <CarouselItem key={image.id || index}>
+                                                                <div 
+                                                                    className="rounded-xl overflow-hidden border border-border/40 shadow-sm bg-muted/30 aspect-video relative cursor-pointer hover:opacity-95 transition-opacity"
+                                                                    onClick={() => setPreviewIndex(index)}
+                                                                >
+                                                                    <img
+                                                                        src={image.image_path}
+                                                                        alt={`${project.title} - Image ${index + 1}`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            </CarouselItem>
+                                                        ))}
+                                                    </CarouselContent>
+                                                    {/* Navigation Buttons for Carousel (not Modal) */}
+                                                    {allImages.length > 1 && (
+                                                        <>
+                                                            <CarouselPrevious className="left-4" />
+                                                            <CarouselNext className="right-4" />
+                                                        </>
+                                                    )}
+                                                </Carousel>
+
+                                                <Dialog open={previewIndex !== null} onOpenChange={(open) => !open && setPreviewIndex(null)}>
+                                                    <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-transparent border-none shadow-none flex items-center justify-center pointer-events-none [&>button:last-child]:hidden">
+                                                         {/* Main container with pointer-events-auto to capture clicks on buttons/image */}
+                                                         <div className="relative w-full h-full flex items-center justify-center pointer-events-auto outline-none" onClick={() => setPreviewIndex(null)}>
+                                                            
+                                                             {previewIndex !== null && (
+                                                                <div 
+                                                                    className="relative max-w-5xl max-h-[90vh] w-auto h-auto"
+                                                                    onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image wrapper
+                                                                >
+                                                                     <img
+                                                                        src={allImages[previewIndex].image_path}
+                                                                        alt="Preview"
+                                                                        className="w-auto h-auto max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl"
+                                                                    />
+
+                                                                    {/* Navigation Controls */}
+                                                                    {allImages.length > 1 && (
+                                                                        <>
+                                                                            <Button 
+                                                                                variant="ghost" 
+                                                                                size="icon" 
+                                                                                className="absolute -left-12 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full w-10 h-10"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setPreviewIndex((prev) => (prev === 0 ? allImages.length - 1 : prev! - 1));
+                                                                                }}
+                                                                            >
+                                                                                <ChevronLeft className="size-8" />
+                                                                                <span className="sr-only">Previous</span>
+                                                                            </Button>
+
+                                                                            <Button 
+                                                                                variant="ghost" 
+                                                                                size="icon" 
+                                                                                className="absolute -right-12 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full w-10 h-10"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setPreviewIndex((prev) => (prev === allImages.length - 1 ? 0 : prev! + 1));
+                                                                                }}
+                                                                            >
+                                                                                <ChevronRight className="size-8" />
+                                                                                <span className="sr-only">Next</span>
+                                                                            </Button>
+                                                                        </>
+                                                                    )}
+
+                                                                    {/* Close Button */}
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="absolute -top-10 right-0 text-white hover:bg-white/20 rounded-full"
+                                                                        onClick={() => setPreviewIndex(null)}
+                                                                    >
+                                                                        <X className="size-6" />
+                                                                        <span className="sr-only">Close</span>
+                                                                    </Button>
+
+                                                                    {/* Image Counter */}
+                                                                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-white/80 text-sm font-medium">
+                                                                        {previewIndex + 1} / {allImages.length}
+                                                                    </div>
+                                                                </div>
+                                                             )}
+                                                         </div>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </>
+                                        );
+                                    })()}
 
                                     {/* Description */}
                                     {project.description && (
@@ -198,14 +302,14 @@ export default function ProjectDetail({ project, relatedProjects }: ProjectDetai
                                 {relatedProjects.map((relatedProject) => (
                                     <Link
                                         key={relatedProject.id}
-                                        href={`/portfolio/${relatedProject.slug}`}
+                                        href={`/projects-gallery/${relatedProject.slug}`}
                                         className="group"
                                     >
                                         <div className="bg-background rounded-xl border overflow-hidden hover:shadow-lg transition-all h-full">
                                             {relatedProject.thumbnail ? (
                                                 <div className="aspect-video overflow-hidden">
                                                     <img 
-                                                        src={`/storage/${relatedProject.thumbnail}`}
+                                                        src={relatedProject.thumbnail}
                                                         alt={relatedProject.title}
                                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                     />

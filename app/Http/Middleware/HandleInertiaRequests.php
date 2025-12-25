@@ -84,6 +84,12 @@ class HandleInertiaRequests extends Middleware
                 'tax_id' => $settings['tax_id'] ?? '',
                 'business_hours' => $settings['business_hours'] ?? '',
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'warning' => fn () => $request->session()->get('warning'),
+                'info' => fn () => $request->session()->get('info'),
+            ],
         ];
     }
 }

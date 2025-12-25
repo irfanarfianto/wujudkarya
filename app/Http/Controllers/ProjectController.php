@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Projects\StoreProjectRequest;
+use App\Http\Requests\Projects\UpdateProjectRequest;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -61,10 +63,13 @@ class ProjectController extends Controller
             ->sort()
             ->values();
 
+        $clients = \App\Models\Client::select('id', 'name', 'company')->orderBy('name')->get();
+
         return inertia('projects/index', [
             'projects' => $projects,
             'filters' => $request->only(['type', 'is_featured', 'status', 'tech_stack', 'search']),
             'availableTechStacks' => $allTechStacks,
+            'clients' => $clients,
         ]);
     }
 
@@ -83,25 +88,9 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        if ($request->has('tech_stack_input')) {
-            $stack = array_map('trim', explode(',', $request->input('tech_stack_input')));
-            $stack = array_filter($stack);
-            $request->merge(['tech_stack' => array_values($stack)]);
-        }
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'type' => 'required|in:web,mobile,system,ui/ux',
-            'description' => 'nullable|string',
-            'tech_stack' => 'nullable|array',
-            'demo_url' => 'nullable|url',
-            'published_at' => 'nullable|date',
-            'is_featured' => 'boolean',
-            'thumbnail' => 'nullable|image|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('projects', 'public');
@@ -111,7 +100,18 @@ class ProjectController extends Controller
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . rand(1000, 9999);
         $validated['tech_stack'] = $validated['tech_stack'] ?? [];
 
-        Project::create($validated);
+        $project = Project::create($validated);
+
+        if ($request->hasFile('project_images')) {
+            foreach ($request->file('project_images') as $image) {
+                $path = $image->store('project_images', 'public');
+                $project->images()->create([
+                    'image_path' => '/storage/' . $path,
+                ]);
+            }
+        }
+
+        \Illuminate\Support\Facades\Cache::forget('featured_projects');
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully!');
     }
@@ -141,7 +141,7 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Project $project)
+    public function update(UpdateProjectRequest $request, Project $project)
     {
         \Log::info('🚀 [PROJECT UPDATE] Request received', [
             'project_id' => $project->id,
@@ -155,24 +155,7 @@ class ProjectController extends Controller
             'files' => $request->allFiles(),
         ]);
 
-        if ($request->has('tech_stack_input')) {
-            $stack = array_map('trim', explode(',', $request->input('tech_stack_input')));
-            $stack = array_filter($stack);
-            $request->merge(['tech_stack' => array_values($stack)]);
-            \Log::info('🔧 [PROJECT UPDATE] Tech stack processed', ['tech_stack' => array_values($stack)]);
-        }
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'type' => 'required|in:web,mobile,system,ui/ux',
-            'description' => 'nullable|string',
-            'tech_stack' => 'nullable|array',
-            'demo_url' => 'nullable|url',
-            'published_at' => 'nullable|date',
-            'is_featured' => 'boolean',
-            'thumbnail' => 'nullable|image|max:2048',
-        ]);
+        $validated = $request->validated();
 
         \Log::info('✅ [PROJECT UPDATE] Validation passed', [
             'validated_data' => Arr::except($validated, ['thumbnail'])
@@ -210,6 +193,17 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
+        if ($request->hasFile('project_images')) {
+            foreach ($request->file('project_images') as $image) {
+                $path = $image->store('project_images', 'public');
+                $project->images()->create([
+                    'image_path' => '/storage/' . $path,
+                ]);
+            }
+        }
+
+        \Illuminate\Support\Facades\Cache::forget('featured_projects');
+
         \Log::info('🎉 [PROJECT UPDATE] Project updated successfully', [
             'project_id' => $project->id,
             'project_title' => $project->title,
@@ -229,6 +223,8 @@ class ProjectController extends Controller
         }
 
         $project->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('featured_projects');
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
     }

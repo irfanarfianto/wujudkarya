@@ -1,8 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from "@/components/ui/input";
 import {
     Table,
     TableBody,
@@ -27,11 +24,17 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { DataTablePagination } from '@/components/data-table-pagination';
-import { PaginatedData, Project } from '@/types';
-import { Edit, Plus, Trash2, X, Layers, Activity, Star, Code, Search } from 'lucide-react';
+import { PaginatedData, Project, Client } from '@/types';
+import { Edit, Plus, Trash2, Layers, Activity, Star, Code } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ProjectForm } from '@/components/projects/project-form';
+import { DrawerForm } from '@/components/ui/drawer-form';
+import { DataTableToolbar } from '@/components/ui/data-table-toolbar';
+
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -48,11 +51,36 @@ interface ProjectsIndexProps {
         search?: string;
     };
     availableTechStacks?: string[];
+    clients: Client[];
 }
 
-export default function ProjectsIndex({ projects, filters = {}, availableTechStacks = [] }: ProjectsIndexProps) {
+export default function ProjectsIndex({ projects, filters = {}, availableTechStacks = [], clients }: ProjectsIndexProps) {
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    
+    // Drawer State
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+    const openCreateDrawer = () => {
+        setEditingProject(null);
+        setIsDrawerOpen(true);
+    };
+
+    const openEditDrawer = (project: Project) => {
+        setEditingProject(project);
+        setIsDrawerOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setIsDrawerOpen(false);
+        setEditingProject(null); // Reset after close animation ideally, but this is fine for now
+    };
+
+    const handleFormSuccess = () => {
+        setIsDrawerOpen(false);
+        setEditingProject(null);
+    };
 
     // Update local state when filters prop changes (e.g. after clear)
     useEffect(() => {
@@ -78,10 +106,8 @@ export default function ProjectsIndex({ projects, filters = {}, availableTechSta
         });
     };
 
-    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            updateFilter('search', searchTerm);
-        }
+    const handleSearchSubmit = () => {
+        updateFilter('search', searchTerm);
     };
 
     const clearFilters = () => {
@@ -108,115 +134,92 @@ export default function ProjectsIndex({ projects, filters = {}, availableTechSta
                                 Manage your portfolio projects here.
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link href="/projects/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                New Project
-                            </Link>
+                        <Button onClick={openCreateDrawer}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Project
                         </Button>
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between py-2">
-                        <div className="relative w-full xl:w-[300px]">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="search"
-                                placeholder="Search projects..."
-                                className="pl-9 w-full bg-background"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={handleSearch}
-                            />
-                        </div>
+                    <DataTableToolbar
+                    searchPlaceholder="Search projects..."
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onSearchSubmit={handleSearchSubmit}
+                    onReset={clearFilters}
+                    hasFilter={hasActiveFilters}
+                >
+                    <Select 
+                        value={filters.type || 'all'} 
+                        onValueChange={(val) => updateFilter('type', val)}
+                    >
+                        <SelectTrigger className="w-[160px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Layers className="h-3.5 w-3.5" />
+                                <SelectValue placeholder="Type" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="web">Web Development</SelectItem>
+                            <SelectItem value="mobile">Mobile App</SelectItem>
+                            <SelectItem value="system">System</SelectItem>
+                            <SelectItem value="ui/ux">UI/UX Design</SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-sm font-medium text-muted-foreground mr-1">Filter by:</span>
-                            
-                            <Select 
-                                value={filters.type || 'all'} 
-                                onValueChange={(val) => updateFilter('type', val)}
-                            >
-                                <SelectTrigger className="w-[160px] h-9 bg-background">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Layers className="h-3.5 w-3.5" />
-                                        <SelectValue placeholder="Type" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="web">Web Development</SelectItem>
-                                    <SelectItem value="mobile">Mobile App</SelectItem>
-                                    <SelectItem value="system">System</SelectItem>
-                                    <SelectItem value="ui/ux">UI/UX Design</SelectItem>
-                                </SelectContent>
-                            </Select>
+                    <Select 
+                        value={filters.status || 'all'} 
+                        onValueChange={(val) => updateFilter('status', val)}
+                    >
+                        <SelectTrigger className="w-[150px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Activity className="h-3.5 w-3.5" />
+                                <SelectValue placeholder="Status" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="published">Published</SelectItem>
+                            <SelectItem value="draft">Draft</SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                            <Select 
-                                value={filters.status || 'all'} 
-                                onValueChange={(val) => updateFilter('status', val)}
-                            >
-                                <SelectTrigger className="w-[150px] h-9 bg-background">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Activity className="h-3.5 w-3.5" />
-                                        <SelectValue placeholder="Status" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="published">Published</SelectItem>
-                                    <SelectItem value="draft">Draft</SelectItem>
-                                </SelectContent>
-                            </Select>
+                    <Select 
+                        value={filters.tech_stack || 'all'} 
+                        onValueChange={(val) => updateFilter('tech_stack', val)}
+                    >
+                        <SelectTrigger className="w-[160px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Code className="h-3.5 w-3.5" />
+                                <SelectValue placeholder="Tech Stack" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Tech Stacks</SelectItem>
+                            {availableTechStacks.map((tech) => (
+                                <SelectItem key={tech} value={tech}>{tech}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                            <Select 
-                                value={filters.tech_stack || 'all'} 
-                                onValueChange={(val) => updateFilter('tech_stack', val)}
-                            >
-                                <SelectTrigger className="w-[160px] h-9 bg-background">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Code className="h-3.5 w-3.5" />
-                                        <SelectValue placeholder="Tech Stack" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Tech Stacks</SelectItem>
-                                    {availableTechStacks.map((tech) => (
-                                        <SelectItem key={tech} value={tech}>{tech}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            <Select 
-                                value={filters.is_featured || 'all'} 
-                                onValueChange={(val) => updateFilter('is_featured', val)}
-                            >
-                                <SelectTrigger className="w-[160px] h-9 bg-background">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Star className="h-3.5 w-3.5" />
-                                        <SelectValue placeholder="Featured" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Featured</SelectItem>
-                                    <SelectItem value="true">Featured Only</SelectItem>
-                                    <SelectItem value="false">Not Featured</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {hasActiveFilters && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={clearFilters} 
-                                    className="h-9 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                >
-                                    <X className="mr-2 h-3.5 w-3.5" />
-                                    Reset
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                    <Select 
+                        value={filters.is_featured || 'all'} 
+                        onValueChange={(val) => updateFilter('is_featured', val)}
+                    >
+                        <SelectTrigger className="w-[160px] h-9 bg-background">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Star className="h-3.5 w-3.5" />
+                                <SelectValue placeholder="Featured" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Featured</SelectItem>
+                            <SelectItem value="true">Featured Only</SelectItem>
+                            <SelectItem value="false">Not Featured</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </DataTableToolbar>
                 </div>
 
                 <div className="rounded-md border bg-white dark:bg-gray-900 shadow-sm">
@@ -274,10 +277,12 @@ export default function ProjectsIndex({ projects, filters = {}, availableTechSta
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" asChild>
-                                                    <Link href={`/projects/${project.id}/edit`}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => openEditDrawer(project)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
                                                 </Button>
                                                 <Button 
                                                     variant="ghost" 
@@ -317,6 +322,37 @@ export default function ProjectsIndex({ projects, filters = {}, availableTechSta
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+
+                <DrawerForm
+                    open={isDrawerOpen}
+                    onOpenChange={setIsDrawerOpen}
+                    title={editingProject ? 'Edit Project' : 'New Project'}
+                    description={editingProject 
+                        ? 'Make changes to your project here. Click save when you\'re done.' 
+                        : 'Add a new project to your portfolio. Click create when you\'re done.'}
+                    width="2xl"
+                    footer={
+                        <div className="flex w-full justify-end gap-2">
+                            <Button variant="outline" onClick={handleDrawerClose}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" form="project-form">
+                                {editingProject ? 'Save Changes' : 'Create Project'}
+                            </Button>
+                        </div>
+                    }
+                >
+                    {/* Render form only when drawer is open to ensure fresh state or properly reset */}
+                    {isDrawerOpen && (
+                        <ProjectForm 
+                            project={editingProject} 
+                            clients={clients} 
+                            onSuccess={handleFormSuccess}
+                            formId="project-form"
+                            hideSubmit={true}
+                        />
+                    )}
+                </DrawerForm>
             </div>
         </AppLayout>
     );

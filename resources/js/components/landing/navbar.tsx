@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Phone, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ const navLinks = [
 ];
 
 export function Navbar({ siteName }: NavbarProps) {
+    const { url } = usePage();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -30,15 +31,26 @@ export function Navbar({ siteName }: NavbarProps) {
 
     const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         e.preventDefault();
-        setIsMobileMenuOpen(false); // Close mobile menu on click
+        setIsMobileMenuOpen(false);
+
+        // If we are not on the home page, redirect to home with anchor
+        if (url !== '/' && !url.startsWith('/#')) {
+            window.location.href = `/${href}`;
+            return;
+        }
+
         const element = document.querySelector(href);
         if (element) {
             element.scrollIntoView({ 
                 behavior: 'smooth',
                 block: 'start'
             });
+            // Update URL hash without scroll
+            history.pushState(null, '', href);
         }
     };
+
+    const isPortfolioActive = url.startsWith('/projects-gallery');
 
     return (
         <>
@@ -66,17 +78,27 @@ export function Navbar({ siteName }: NavbarProps) {
                     
                     {/* Desktop Navigation - Center */}
                     <nav className="hidden md:flex gap-8 text-sm font-medium absolute left-1/2 -translate-x-1/2">
-                        {navLinks.map((link) => (
-                            <a 
-                                key={link.href} 
-                                href={link.href} 
-                                onClick={(e) => handleSmoothScroll(e, link.href)}
-                                className="hover:text-primary transition-colors relative group"
-                            >
-                                {link.label}
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                            </a>
-                        ))}
+                        {navLinks.map((link) => {
+                            const isActive = link.href === '#portofolio' && isPortfolioActive;
+                            
+                            return (
+                                <a 
+                                    key={link.href} 
+                                    href={link.href} 
+                                    onClick={(e) => handleSmoothScroll(e, link.href)}
+                                    className={cn(
+                                        "transition-colors relative group",
+                                        isActive ? "text-primary font-bold" : "hover:text-primary"
+                                    )}
+                                >
+                                    {link.label}
+                                    <span className={cn(
+                                        "absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full",
+                                        isActive && "w-full"
+                                    )}></span>
+                                </a>
+                            );
+                        })}
                     </nav>
                     
                     {/* Desktop CTA & Mobile Toggle - Right */}
@@ -137,16 +159,22 @@ export function Navbar({ siteName }: NavbarProps) {
 
                 {/* Drawer Content */}
                 <nav className="flex-1 flex flex-col p-4 gap-2 overflow-y-auto">
-                    {navLinks.map((link) => (
-                        <a 
-                            key={link.href} 
-                            href={link.href} 
-                            onClick={(e) => handleSmoothScroll(e, link.href)}
-                            className="text-base font-medium hover:bg-muted/50 hover:text-primary transition-colors py-3 px-3 rounded-md"
-                        >
-                            {link.label}
-                        </a>
-                    ))}
+                    {navLinks.map((link) => {
+                        const isActive = link.href === '#portofolio' && isPortfolioActive;
+                        return (
+                            <a 
+                                key={link.href} 
+                                href={link.href} 
+                                onClick={(e) => handleSmoothScroll(e, link.href)}
+                                className={cn(
+                                    "text-base font-medium transition-colors py-3 px-3 rounded-md",
+                                    isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/50 hover:text-primary"
+                                )}
+                            >
+                                {link.label}
+                            </a>
+                        );
+                    })}
                 </nav>
 
                 {/* Drawer Footer */}

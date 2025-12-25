@@ -56,7 +56,9 @@ class HomeController extends Controller
             abort(404);
         }
 
-        $project->load('client');
+        $project->load(['client', 'images' => function($query) {
+            $query->orderBy('sort_order')->orderBy('id');
+        }]);
 
         // Get related projects (same client or featured)
         $relatedProjects = Project::with('client')
@@ -73,6 +75,21 @@ class HomeController extends Controller
         return inertia('landing/project-detail', [
             'project' => $project,
             'relatedProjects' => $relatedProjects,
+        ]);
+    }
+
+    public function portfolio()
+    {
+        $projects = Project::with('client:id,name,company')
+            ->select('id', 'client_id', 'title', 'slug', 'thumbnail', 'type', 'tech_stack', 'published_at', 'excerpt')
+            ->whereNotNull('published_at')
+            // Order by featured first, then by date
+            ->orderBy('is_featured', 'desc')
+            ->latest('published_at')
+            ->paginate(12);
+
+        return inertia('landing/portfolio', [
+            'projects' => $projects,
         ]);
     }
 }
