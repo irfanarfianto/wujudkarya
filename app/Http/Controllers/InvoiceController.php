@@ -18,8 +18,13 @@ class InvoiceController extends Controller
             ->latest()
             ->paginate(10);
 
+        $clients = \App\Models\Client::select('id', 'name', 'company')->orderBy('name')->get();
+        $projects = \App\Models\Project::select('id', 'client_id', 'title')->orderBy('title')->get();
+
         return inertia('invoices/index', [
-            'invoices' => $invoices
+            'invoices' => $invoices,
+            'clients' => $clients,
+            'projects' => $projects,
         ]);
     }
 
@@ -123,5 +128,45 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice)
     {
         //
+    }
+
+    /**
+     * Preview invoice as PDF in browser
+     */
+    public function preview(Invoice $invoice)
+    {
+        $invoice->load(['client', 'project', 'items']);
+        
+        $settings = \App\Models\Setting::pluck('value', 'key')->all();
+        
+        $pdf = \PDF::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'settings' => $settings,
+        ]);
+        
+        // Replace slashes with hyphens for valid filename
+        $filename = str_replace('/', '-', $invoice->invoice_number) . '.pdf';
+        
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Download invoice as PDF
+     */
+    public function download(Invoice $invoice)
+    {
+        $invoice->load(['client', 'project', 'items']);
+        
+        $settings = \App\Models\Setting::pluck('value', 'key')->all();
+        
+        $pdf = \PDF::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'settings' => $settings,
+        ]);
+        
+        // Replace slashes with hyphens for valid filename
+        $filename = str_replace('/', '-', $invoice->invoice_number) . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

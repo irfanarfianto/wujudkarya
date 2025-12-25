@@ -1,19 +1,33 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { PaginatedData, Invoice } from '@/types';
-import { Edit, Plus, Download } from 'lucide-react';
+import { DrawerForm } from '@/components/ui/drawer-form';
+import { PdfPreviewDialog } from '@/components/invoices/pdf-preview-dialog';
+import InvoiceForm from '@/components/invoices/invoice-form';
+import { PaginatedData, Invoice, Client, Project } from '@/types';
+import { Edit, Plus, Eye } from 'lucide-react';
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Invoices', href: '/invoices' },
 ];
 
-export default function InvoicesIndex({ invoices }: { invoices: PaginatedData<Invoice> }) {
+interface InvoicesIndexProps {
+    invoices: PaginatedData<Invoice>;
+    clients: Client[];
+    projects: Project[];
+}
+
+export default function InvoicesIndex({ invoices, clients, projects }: InvoicesIndexProps) {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<Invoice | undefined>(undefined);
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewInvoice, setPreviewInvoice] = useState<Invoice | undefined>(undefined);
 
     const getStatusColor = (status: string) => {
         switch(status) {
@@ -23,6 +37,31 @@ export default function InvoicesIndex({ invoices }: { invoices: PaginatedData<In
             case 'cancelled': return 'destructive';
             default: return 'outline';
         }
+    };
+
+    const openCreateDrawer = () => {
+        setSelectedInvoice(undefined);
+        setDrawerOpen(true);
+    };
+
+    const openEditDrawer = (invoice: Invoice) => {
+        setSelectedInvoice(invoice);
+        setDrawerOpen(true);
+    };
+
+    const openPreview = (invoice: Invoice) => {
+        setPreviewInvoice(invoice);
+        setPreviewOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setDrawerOpen(false);
+        setSelectedInvoice(undefined);
+    };
+
+    const handleFormSuccess = () => {
+        handleDrawerClose();
+        router.reload({ only: ['invoices'] });
     };
 
     return (
@@ -35,11 +74,9 @@ export default function InvoicesIndex({ invoices }: { invoices: PaginatedData<In
                         <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
                         <p className="text-muted-foreground">Manage billing and payments.</p>
                     </div>
-                    <Button asChild>
-                        <Link href="#">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Invoice
-                        </Link>
+                    <Button onClick={openCreateDrawer}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Invoice
                     </Button>
                 </div>
 
@@ -80,10 +117,20 @@ export default function InvoicesIndex({ invoices }: { invoices: PaginatedData<In
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                 <Button variant="ghost" size="icon" title="Download PDF">
-                                                    <Download className="h-4 w-4" />
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    title="Preview PDF"
+                                                    onClick={() => openPreview(invoice)}
+                                                >
+                                                    <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon"
+                                                    title="Edit Invoice"
+                                                    onClick={() => openEditDrawer(invoice)}
+                                                >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -107,6 +154,29 @@ export default function InvoicesIndex({ invoices }: { invoices: PaginatedData<In
                     )}
                 </div>
             </div>
+
+            <DrawerForm
+                open={drawerOpen}
+                onOpenChange={setDrawerOpen}
+                title={selectedInvoice ? 'Edit Invoice' : 'Create Invoice'}
+                description={selectedInvoice ? 'Update invoice details and items.' : 'Create a new invoice for your client.'}
+            >
+                <InvoiceForm
+                    invoice={selectedInvoice}
+                    clients={clients}
+                    projects={projects}
+                    onSuccess={handleFormSuccess}
+                />
+            </DrawerForm>
+
+            {previewInvoice && (
+                <PdfPreviewDialog
+                    open={previewOpen}
+                    onOpenChange={setPreviewOpen}
+                    invoiceId={previewInvoice.id}
+                    invoiceNumber={previewInvoice.invoice_number}
+                />
+            )}
         </AppLayout>
     );
 }

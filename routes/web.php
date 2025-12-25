@@ -15,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects', \App\Http\Controllers\ProjectController::class);
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
     Route::resource('invoices', \App\Http\Controllers\InvoiceController::class);
+    Route::get('invoices/{invoice}/preview', [\App\Http\Controllers\InvoiceController::class, 'preview'])->name('invoices.preview');
+    Route::get('invoices/{invoice}/download', [\App\Http\Controllers\InvoiceController::class, 'download'])->name('invoices.download');
     Route::resource('leads', \App\Http\Controllers\LeadController::class);
     
     Route::get('content', [\App\Http\Controllers\ContentController::class, 'index'])->name('content.index');
